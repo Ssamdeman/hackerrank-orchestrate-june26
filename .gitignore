@@ -25,5 +25,8 @@ Thumbs.db
 build/
 dist/
 
+# Per-image vision cache (machine-local, reproducible from the API)
+**/.cache/
+
 # Redundant unzipped subset (full data lives in dataset/)
 claims/

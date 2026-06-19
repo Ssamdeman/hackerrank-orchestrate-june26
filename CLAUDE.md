@@ -50,20 +50,18 @@ Dont use browser verification. Let Human to verify UI
 # Project Context (appended)
 
 ## Repository state
-This is a **pre-challenge prep repo** for the HackerRank Orchestrate June 2026 hackathon (24h, solo authorship, starts **June 19, 2026, 11:00 AM IST**). **No application code exists yet** — the actual problem statement is delivered by email at start time. There are no build/lint/test commands to run until the codebase is created. Until then, `DNA.md` is the authoritative brief — read it first.
+
+This is a **pre-challenge prep repo** for the HackerRank Orchestrate June 2026 hackathon (24h, solo authorship, starts **June 19, 2026, 11:00 AM IST**). **The application code exists now**
 
 ## Authoritative context files
+
 - **`DNA.md`** — full challenge brief: expected shape, I/O contract, hard rules, output schema, logging spec, and evaluation signals. Its "Open items to confirm" list is **unverified** until the June email lands; the `AGENTS.md` / `evaluation_criteria.md` that ship with the actual challenge override DNA.md's assumptions.
 - **`CLAUDE.md`** (the persona above) — your operating role (Agent 3: Coder) and design philosophy.
 
-## Expected architecture (once code lands)
-A **terminal AI agent that triages support tickets against a provided corpus only**. Core decision flow: **classify → assess urgency → reply-or-escalate**, with an explainable justification (RAG-style grounding over the corpus).
-- **Input:** `support_tickets/support_tickets.csv` → **Output:** `support_tickets/output.csv`
-- **Per-ticket output fields:** `status` (`replied`/`escalated`), `product_area`, `response`, `justification`, `request_type` (`product_issue`/`feature_request`/`bug`/`invalid`)
-- Agent implementation lives under `code/`; provided corpus under `data/`.
-
 ## Non-negotiable constraints for any code written
+
 These govern correctness and scoring — never violate them:
+
 - **Corpus-only grounding** — no live web calls for ground-truth answers; never invent policies (zero tolerance for hallucination).
 - **Fail closed** — escalate risky/sensitive/unsupported cases rather than guess.
 - **Secrets from environment variables only** — never hardcode API keys or tokens.

@@ -23,19 +23,45 @@ DEFAULT_VISION_MODEL = "claude-opus-4-8"
 DEFAULT_OPENROUTER_MODEL = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
 
 
+def _default_model_for(provider: str) -> str:
+    return DEFAULT_OPENROUTER_MODEL if provider == "openrouter" else DEFAULT_VISION_MODEL
+
+
 def vision_provider() -> str:
     """Which vision vendor Stage 1 routes to: 'anthropic' | 'openrouter'."""
     return os.environ.get("VISION_PROVIDER", "anthropic").strip().lower()
 
 
 def vision_model() -> str:
-    """Model slug for the active provider. VISION_MODEL overrides the default."""
-    explicit = os.environ.get("VISION_MODEL")
-    if explicit:
-        return explicit
-    if vision_provider() == "openrouter":
-        return DEFAULT_OPENROUTER_MODEL
-    return DEFAULT_VISION_MODEL
+    """Model slug for the active vision provider. VISION_MODEL overrides the default."""
+    return os.environ.get("VISION_MODEL") or _default_model_for(vision_provider())
+
+
+# --- Claim role (Stage 2) — per-role routing through the same selection logic.
+# Defaults to the vision provider/model if unset (DNA §2.1: vision can be frontier,
+# claim-read can be a cheaper model — but they share one swap mechanism).
+
+def claim_provider() -> str:
+    """Which vendor Stage 2 routes to: CLAIM_PROVIDER, else the vision provider."""
+    return os.environ.get("CLAIM_PROVIDER", vision_provider()).strip().lower()
+
+
+def claim_model() -> str:
+    """Model slug for the active claim provider. CLAIM_MODEL overrides the default."""
+    return os.environ.get("CLAIM_MODEL") or _default_model_for(claim_provider())
+
+
+def claim_max_tokens() -> int:
+    return int(os.environ.get("CLAIM_MAX_TOKENS", "1024"))
+
+
+def claim_temperature() -> float | None:
+    raw = os.environ.get("CLAIM_TEMPERATURE", "").strip()
+    return float(raw) if raw else None
+
+
+def claim_seed() -> int:
+    return int(os.environ.get("CLAIM_SEED", os.environ.get("VISION_SEED", "0")))
 
 
 def vision_max_tokens() -> int:

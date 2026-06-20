@@ -1,45 +1,24 @@
-"""The locked vocabularies and the per-image blind record.
+"""The per-image blind record and Stage 1's validator.
 
-Single source of truth for every enum Stage 1 may emit. The vision prompt, the
-structured-output schema, and the validator all read from here, so the contract
-can never drift between what we ask for and what we accept.
-
-Enum lists are copied verbatim from problem_statement.md. The record shape and
-the vision/resolver ownership split are fixed by solution_dna.md (Iteration 2).
+The shared contract enums (ISSUE_TYPES, OBJECT_PARTS, SEVERITIES, CONFIDENCES)
+live in code/vocab.py — neither stage owns them. This module adds the Stage-1-
+internal enums and the ImageRecord shape. The record shape and the
+vision/resolver ownership split are fixed by solution_dna.md (Iteration 2).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from typing import Any, Callable
 
-# --- Contract enums (verbatim from problem_statement.md) ------------------
+# Shared contract enums live in code/vocab.py so neither stage owns them.
+from vocab import CONFIDENCES, ISSUE_TYPES, OBJECT_PARTS, SEVERITIES
 
-ISSUE_TYPES: tuple[str, ...] = (
-    "dent", "scratch", "crack", "glass_shatter", "broken_part", "missing_part",
-    "torn_packaging", "crushed_packaging", "water_damage", "stain", "none", "unknown",
-)
-
-# object_part is object-conditioned — the valid vocabulary depends on what
-# object was seen, so it can never be a single flat enum.
-OBJECT_PARTS: dict[str, tuple[str, ...]] = {
-    "car": ("front_bumper", "rear_bumper", "door", "hood", "windshield", "side_mirror",
-            "headlight", "taillight", "fender", "quarter_panel", "body", "unknown"),
-    "laptop": ("screen", "keyboard", "trackpad", "hinge", "lid", "corner", "port",
-               "base", "body", "unknown"),
-    "package": ("box", "package_corner", "package_side", "seal", "label", "contents",
-                "item", "unknown"),
-}
-
-SEVERITIES: tuple[str, ...] = ("none", "low", "medium", "high", "unknown")
-
-# --- Stage-1-internal enums (not direct output columns) -------------------
+# --- Stage-1-internal enums (not shared, not output columns) --------------
 
 # Blind vision must be able to say "this is something other than the three
 # claim objects" so the resolver can later raise wrong_object. claim_object
 # (an input) is only {car, laptop, package}; we add other/unknown for seeing.
 OBJECTS_SEEN: tuple[str, ...] = ("car", "laptop", "package", "other", "unknown")
-
-CONFIDENCES: tuple[str, ...] = ("low", "medium", "high")
 
 # The only risk_flags vision owns: pure image-quality / usability. These drive
 # valid_image. Every other risk_flag needs the claim or history → resolver.

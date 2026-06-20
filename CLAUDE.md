@@ -51,11 +51,13 @@ Dont use browser verification. Let Human to verify UI
 
 ## Repository state
 
-This is a **pre-challenge prep repo** for the HackerRank Orchestrate June 2026 hackathon (24h, solo authorship, starts **June 19, 2026, 11:00 AM IST**). **The application code exists now**
+HackerRank Orchestrate (June 2026) — Multi-Modal Evidence Review. Solo, 24h. The application is **under active construction** in `code/`.
 
-## Authoritative context files
+## Authoritative context files (on conflict, the earlier wins)
 
-- **`DNA.md`** — full challenge brief: expected shape, I/O contract, hard rules, output schema, logging spec, and evaluation signals. Its "Open items to confirm" list is **unverified** until the June email lands; the `AGENTS.md` / `evaluation_criteria.md` that ship with the actual challenge override DNA.md's assumptions.
+- **`problem_statement.md`** — the graded I/O contract: input/output schema, controlled vocabularies, `output.csv` columns and allowed values. **Wins on any conflict.**
+- **`solution_dna.md`** — the locked architecture (Iteration 2): **See → (look closer if needed) → read the claim → resolve.** Two model steps, one deterministic script; **no model in the verdict path**.
+- **`DNA.md`** — the older full brief; superseded by the two above where they differ.
 - **`CLAUDE.md`** (the persona above) — your operating role (Agent 3: Coder) and design philosophy.
 
 ## Non-negotiable constraints for any code written
@@ -67,3 +69,22 @@ These govern correctness and scoring — never violate them:
 - **Secrets from environment variables only** — never hardcode API keys or tokens.
 - **Deterministic runs** — seed all randomness for reproducibility.
 - **Mandatory append-only dev log** at `%USERPROFILE%\hackerrank_orchestrate\log.txt` (UTF-8, `\n` line endings). Never rewrite past entries; redact secrets; create the parent dir if missing. Sub-agents/worktrees log to the **same** file and set a `parent_agent=` field.
+
+## Build progress
+
+- **Stage 1 (Seeing)** — built, tested, committed (`d95b611`), smoke-verified live. Blind global pass + conditional directed-detail pass in `code/stage1/`. Provider-agnostic via `VISION_PROVIDER` (anthropic | openrouter).
+- **Stage 2 (Reading the claim)** — built, tested, smoke-verified live. `extract_claim` + a deterministic LLM-control injection floor in `code/stage2/`. Shared enums hoisted to `code/vocab.py` (both stages import them; never redefine).
+- **Stage 3 (Resolving)** — NOT started; next. Opens with a **grounding step, not a build**. Deterministic, no pixels, no model in the verdict; reads top to bottom; one row per claim → `output.csv`.
+
+The four values have held on live data: blind-first, fail-closed, instructions-as-data, history-as-risk-only (history hasn't entered yet — correct; it's Stage 3). Run conventions: everything runs from `code/`; per-image / per-claim caches under `**/.cache/` are git-ignored; real keys live in `code/.env` (never `.env.example`).
+
+## Stage 3 grounding threads (resolve in grounding, before building)
+
+1. **Image-borne injection (top thread)** — resolver maps `text_seen → text_instruction_present` and must **never execute** captured text. Open question: does *any* image text raise the flag, or only instruction-shaped text? Live captures so far are benign (license plate, box caption) — a caption is not an injection.
+2. **Multi-image coverage + `supporting_image_ids`** — Stage 1 has only run `img_1`; cases ship 2–3 images and evidence may be in `img_2/img_3`. Run vision across the full `image_paths` set; select supporting IDs from it.
+3. **`contradicted` vs `not_enough_information` boundary** — anchor to the 20 labeled rows, tune on the disagreement set.
+4. **Multi-part primary reconciliation** — claim-primary ≠ image-primary (e.g. case_034: image=box/crushed vs claim=label/unknown).
+5. **History as risk-only wiring** — `user_history.csv` raises `risk_flags`; never flips a photo-settled verdict.
+6. **Exact `output.csv` schema** — the 14 columns and order from `problem_statement.md`.
+
+Calibrate against the 20 labeled rows — measure, don't hand-read.

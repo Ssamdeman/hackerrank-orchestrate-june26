@@ -84,7 +84,7 @@ def main():
         reader = csv.DictReader(f)
         claims = list(reader)
 
-    provider = os.getenv("VISION_PROVIDER", "openrouter").upper()
+    provider = os.getenv("VISION_PROVIDER", "anthropic").upper()
     print("======================================================================")
     print("HACKERRANK ORCHESTRATE: DAMAGE-CLAIM RESOLVER PIPELINE")
     print(f"  Rows to process:  {len(claims)}")

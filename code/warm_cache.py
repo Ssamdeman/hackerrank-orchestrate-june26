@@ -8,7 +8,7 @@ import traceback
 from pathlib import Path
 
 # Add code folder to python path so imports resolve
-repo_root = Path(r"c:\Users\Samue\Documents\projects\github\Orchestrate-Hackerrank-2024")
+repo_root = Path(__file__).resolve().parents[1]
 sys.path.append(str(repo_root / "code"))
 
 from stage1.vision import SYSTEM_PROMPT as S1_SYS, USER_PROMPT as S1_USR, _cache_key as _s1_key, _directed_prompts, _media_type, _relative_ref

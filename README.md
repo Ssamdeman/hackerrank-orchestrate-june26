@@ -104,6 +104,28 @@ All model queries are cached locally under `code/stage1/.cache/stage1/` and `cod
 * **Stage 2 keys:** Hashed from `user_claim + model + system_prompt + user_prompt + schema_json`.
 * **Fallback Strategy:** If a live API call is required and OpenRouter returns a 429 rate limit or daily limit error, the query throttles with exponential backoff (up to 5 retries, then waits 2 minutes) before automatically falling back to the Anthropic provider. Warmed items are written to both cache directories so that subsequent runs replay cleanly.
 
+
+## Reproducing the Results
+
+**Default (recommended): replay from the shipped cache.**
+The cache IS a committed artifact. A normal run replays it — deterministic, offline, ~1.4s:
+```bash
+python code/main.py            # regenerates output.csv from cache
+python code/evaluation/main.py # regenerates the scorecard from cache
+```
+You do not need API keys for this. Same input → same output, every time.
+
+**Optional: regenerate the cache from scratch (requires API keys).**
+To re-derive every perception/extraction record live (e.g. to verify nothing is hardcoded):
+1. Put valid keys in `code/.env` (`ANTHROPIC_API_KEY`, optionally `OPENROUTER_API_KEY`).
+2. Delete the cache dirs: `code/stage1/.cache/` and `code/stage2/.cache/`.
+3. Warm the cache (handles throttling + provider fallback automatically):
+```bash
+   python code/warm_cache.py
+```
+4. Re-run `python code/main.py`.
+This makes ~110 vision + ~64 extraction calls (~$1–6 depending on model) and takes a few minutes. The deterministic Stage 3 resolver is unchanged either way — only the upstream perception cache is rebuilt.
+
 ---
 
 ## Evaluation Results

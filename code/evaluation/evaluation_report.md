@@ -133,14 +133,15 @@ List of cases where a claimed part appeared ONLY in `additional_parts_seen` (not
 * **Total Token Volume:** ~231,200 input tokens and ~30,400 output tokens.
 
 ### 3. Cost Projection (Stated Claude Pricing)
-Stated pricing for **Claude 3.5 Sonnet** ($3.00/M input, $15.00/M output) vs. **Claude 3 Opus** ($15.00/M input, $75.00/M output):
-* **Claude 3.5 Sonnet Cost:**
+Note: The actual model run for the warmed cache was **claude-opus-4-8**.
+Below are the published-tier proxy estimates for projected claim processing:
+* **Claude 3.5 Sonnet Cost (published-tier proxy estimate):**
   * Vision Input: $3.00 * 0.180M = $0.54
   * Vision Output: $15.00 * 0.024M = $0.36
   * Extraction Input: $3.00 * 0.051M = $0.153
   * Extraction Output: $15.00 * 0.006M = $0.09
   * **Total Estimated Test Set Cost (Sonnet):** **$1.14**
-* **Claude 3 Opus Cost:**
+* **Claude 3 Opus Cost (published-tier proxy estimate):**
   * Vision Input: $15.00 * 0.180M = $2.70
   * Vision Output: $75.00 * 0.024M = $1.80
   * Extraction Input: $15.00 * 0.051M = $0.765

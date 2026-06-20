@@ -78,6 +78,22 @@ USER_PROMPT = "Inspect this image and record exactly what you see."
 # --- Image + cache helpers -------------------------------------------------
 
 def _media_type(path: Path) -> str:
+    try:
+        header = path.read_bytes()[:12]
+    except Exception:
+        header = b""
+
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    elif header.startswith(b"\xff\xd8"):
+        return "image/jpeg"
+    elif header.startswith(b"GIF8"):
+        return "image/gif"
+    elif b"WEBP" in header:
+        return "image/webp"
+    elif b"ftypavif" in header or b"ftypav1" in header:
+        return "image/avif"
+
     mt = _MEDIA_TYPES.get(path.suffix.lower())
     if mt is None:
         raise VisionError(f"unsupported image type: {path.suffix}")
@@ -186,6 +202,7 @@ def _run_pass(
             raw = cached["record"]
 
     if raw is None:
+        print(f" (calling VLM API for {image_id} - may take a few seconds)...", end="", flush=True)
         raw, usage = adapter.see(
             image_b64=image_b64,
             media_type=media_type,
@@ -229,8 +246,23 @@ def see_image_passes(
         raise VisionError(f"image not found: {path}")
 
     image_bytes = path.read_bytes()
-    image_b64 = base64.standard_b64encode(image_bytes).decode("ascii")
     media_type = _media_type(path)
+
+    if media_type == "image/avif" or b"ftypavif" in image_bytes[:30] or b"ftypav1" in image_bytes[:30]:
+        from PIL import Image
+        import io
+        try:
+            with Image.open(path) as img:
+                if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                    img = img.convert("RGB")
+                out = io.BytesIO()
+                img.save(out, format="JPEG", quality=90)
+                image_bytes = out.getvalue()
+                media_type = "image/jpeg"
+        except Exception:
+            pass
+
+    image_b64 = base64.standard_b64encode(image_bytes).decode("ascii")
     image_id = path.stem                       # bare img_N for the contract
     image_ref = _relative_ref(path, repo_root)  # full relative path — cache/uniqueness key
 

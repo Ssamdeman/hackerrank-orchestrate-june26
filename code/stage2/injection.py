@@ -51,10 +51,10 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
         r"\byou\s+are\s+now\b.{0,30}?"
         r"\b(?:a|an|in|going\s+to|no\s+longer|free|unrestricted|dan|jailbroken)\b", _F)),
 
-    # 6. impersonation — act as / pretend to be another agent or an AI role
+    # 6. impersonation — act as / pretend to be another agent or an AI role, or system prompt leak
     ("role_injection", re.compile(
-        r"\b(?:act\s+as|pretend\s+(?:to\s+be|you(?:'re|\s+are)))\b.{0,30}?"
-        r"\b(?:ai|assistant|chatbot|model|admin|administrator|developer|system|"
+        r"\b(?:act\s+as|pretend\s+(?:to\s+be|you(?:'re|\s+are))|you\s+are\s+(?:a|an))\b.{0,30}?"
+        r"\b(?:ai|assistant|chatbot|model|admin|administrator|developer|system|inspector|"
         r"dan|jailbroken|unrestricted|no\s+rules)\b", _F)),
 
     # 7. "new/updated/revised instructions:" — an instruction block handoff

@@ -120,6 +120,7 @@ def extract_claim(
             raw = cached["record"]
 
     if raw is None:
+        print(f" (calling LLM API for user {user_id} - may take a few seconds)...", end="", flush=True)
         if adapter is None:
             adapter = make_claim_adapter()      # provider seam: anthropic | openrouter (env)
         raw, usage = adapter.read(
